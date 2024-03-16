@@ -1,4 +1,4 @@
-femnist_target_mac = 15e6
+femnist_target_mac = 5e6
 femnist_th_incre = 0.01
 cifar_th_incre = 0.2
 femnist_model_layers = {

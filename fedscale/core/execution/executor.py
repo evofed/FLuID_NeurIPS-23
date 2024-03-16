@@ -211,7 +211,7 @@ class Executor(object):
     def Train(self, config):
         """Load train config and data to start training on client """
         client_id, train_config = config['client_id'], config['task_config']
-
+        model = config['model']
         client_conf = self.override_conf(train_config)
         train_res = self.training_handler(
             clientId=client_id, conf=client_conf, model=model)

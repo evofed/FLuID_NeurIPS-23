@@ -39,6 +39,7 @@ class Fluid_Model_Manager:
         self.def_invariant_neurons = {}
         self.task_this_round = 0
         self.task_updated = 0
+        self.p = 0.95
         if args.data_set == "femnist":
             self.model_layers = femnist_model_layers
             self.th_incre = femnist_th_incre
@@ -121,7 +122,8 @@ class Fluid_Model_Manager:
         self.task_updated += 1
         clientId = results['clientId']
         # save layer diffs for updating th
-        client_model = self.client_models[clientId].load_state_dict(results['update_weight'])
+        self.client_models[clientId].load_state_dict(results['update_weight'])
+        client_model = self.client_models[clientId]
         if self.client2p[clientId] == 1:
             self.layer_diffs.append(get_neuron_weight_diff(self.model, client_model, self.model_layers.keys()))
         else:
@@ -137,7 +139,12 @@ class Fluid_Model_Manager:
 
         if self.task_updated == self.task_this_round:
             for name in self.model_weights.keys():
-                self.model_weights[name] /= self.task_this_round
+                d_type = self.model_weights[name].data.dtype
+                self.model_weights[name].data = torch.div(
+                    self.model_weights[name].data,
+                    torch.tensor(self.task_this_round, dtype=d_type)
+                ).to(dtype=d_type)
+
 
     def init_th(self):
         self.th = {}
@@ -159,9 +166,11 @@ class Fluid_Model_Manager:
         # if a dropped neuron is invariant, then it's strongly invariant
         self.def_invariant_neurons = defaultdict(list)
         for layer in self.model_layers.keys():
+            self.def_invariant_neurons[layer] = []
             for neuron in self.dropped_neurons[layer]:
                 if neuron in self.invariant_neurons[layer]:
                     self.def_invariant_neurons[layer].append(neuron)
+
 
     def calibrate(self, round):
         client_cap = sorted(self.client2p.items(), key=lambda x: x[1])
@@ -215,6 +224,12 @@ class Fluid_Model_Manager:
         return list(self.client_models.keys())
     
     def _get_dropping_neurons(self, p: float) -> Tuple[dict, dict]:
+        if p == 1:
+            layer_drop_out = {}
+            layer_drop_in = {}
+            for layer_name in self.model_layers.keys():
+                layer_drop_out[layer_name] = []
+                layer_drop_in[layer_name] = []
         # return the neurons to drop
         layer_drop_out = {}
         for layer_name in self.model_layers.keys():
@@ -222,9 +237,9 @@ class Fluid_Model_Manager:
             if self.model_layers[layer_name]["descendants"] == []:
                 continue
             num_drop = math.floor(self.layer_inout_dims[layer_name][1] * (1-p))
-            if num_drop <= self.def_invariant_neurons[layer_name]:
+            if num_drop <= len(self.def_invariant_neurons[layer_name]):
                 layer_drop_out[layer_name] = self.def_invariant_neurons[layer_name][:num_drop]
-            elif num_drop <= self.invariant_neurons[layer_name]:
+            elif num_drop <= len(self.invariant_neurons[layer_name]):
                 layer_drop_out[layer_name] = self.def_invariant_neurons[layer_name][:num_drop]
                 possible_invariant_neurons = [neuron for neuron in self.invariant_neurons[layer_name] \
                                               if neuron not in self.def_invariant_neurons[layer_name]]
@@ -243,13 +258,15 @@ class Fluid_Model_Manager:
         for layer_name in self.model_layers.keys():
             if self.model_layers[layer_name]["ansestors"] == []:
                 layer_drop_in[layer_name] = []
+                continue
             layer_drop_in[layer_name] = layer_drop_out[self.model_layers[layer_name]["ansestors"][0]]
 
         return layer_drop_in, layer_drop_out
     
     def generate_sub_model(self, p: float):
+        layer_drop_in, layer_drop_out = self._get_dropping_neurons(p)
         if p == 1:
-            return deepcopy(self.model)
+            return deepcopy(self.model), layer_drop_in, layer_drop_out
         layer_drop_in, layer_drop_out = self._get_dropping_neurons(p)
         sub_model = deepcopy(self.model)
         for layer_name in self.model_layers.keys():

@@ -172,7 +172,7 @@ class Aggregator(job_api_pb2_grpc.JobServiceServicer):
         assert self.args.engine == commons.PYTORCH, "Please define model for non-PyTorch models"
 
         if self.args.model_path != 'None':
-            with open(f'/users/yuxuanzh/FedTrans/docker/{self.args.model_path}', 'rb') as f:
+            with open(f'/users/yuxuan18/FLuID_NeurIPS-23/docker/{self.args.model_path}', 'rb') as f:
                 logging.info(f'loading checkpoint')
                 model = pickle.load(f)
         else:
@@ -272,7 +272,7 @@ class Aggregator(job_api_pb2_grpc.JobServiceServicer):
             # need to register different duration for different rounds
             # So oort is invalidated? So we need to use random method instead
             self.client_manager.registerDuration(clientId, batch_size=self.args.batch_size,
-                                                 upload_step=self.args.local_steps, upload_size=self.model_manager.get_model_update_size_all(), download_size=self.model_manager.get_model_update_size_all())
+                                                 upload_step=self.args.local_steps, upload_size=self.model_manager.get_model_update_size(), download_size=self.model_manager.get_model_update_size())
             self.num_of_clients += 1
 
 
@@ -530,9 +530,10 @@ class Aggregator(job_api_pb2_grpc.JobServiceServicer):
         #   - invariant neurons in this round
         #   - neurons dropped last round and still invariant this round
 
-        if self.round == 1:
+        if self.round == 2:
             self.model_manager.init_th()
-        else:
+
+        if self.round >= 2:
             self.model_manager.identify_invariant_neurons()
 
         # STEP-4: determine stragglers and calculate desired speed up

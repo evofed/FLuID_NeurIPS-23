@@ -28,14 +28,9 @@ class Client(object):
         self.epoch_train_loss = 1e-4
         self.completed_steps = 0
         self.loss_squre = 0
-        self.layer_names = conf.layer_names
         self.grad = {}
 
     def train(self, client_data, model, conf):
-
-        # from fedscale.core.net2netlib import retain_grad
-        # for layer in self.layer_names:
-        #     retain_grad(model, layer[1])
 
         clientId = conf.clientId
         logging.info(f"Start to train (CLIENT: {clientId}) ...")
@@ -233,13 +228,6 @@ class Client(object):
             loss.backward()
             # torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
             optimizer.step()
-
-            # ========= Track gradient ========================
-            for layer in self.layer_names:
-                temp_grad = get_model_layer_grad(model, layer[1])
-                if layer[1] not in self.grad:
-                    self.grad[layer[1]] = torch.zeros_like(temp_grad)
-                self.grad[layer[1]] += temp_grad
 
             # ========= Weight handler ========================
             self.optimizer.update_client_weight(
