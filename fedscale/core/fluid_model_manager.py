@@ -43,6 +43,9 @@ class Fluid_Model_Manager:
         if args.data_set == "femnist":
             self.model_layers = femnist_model_layers
             self.th_incre = femnist_th_incre
+            self.final_convs = femnist_final_conv
+            self.final_fcs = femnist_final_fc
+            self.final_batch = femnist_final_batch
         else:
             raise NotImplementedError(f"Dataset {args.data_set} is not supported")
         
@@ -224,17 +227,19 @@ class Fluid_Model_Manager:
         return list(self.client_models.keys())
     
     def _get_dropping_neurons(self, p: float) -> Tuple[dict, dict]:
+        # return the neurons to drop
         if p == 1:
             layer_drop_out = {}
             layer_drop_in = {}
             for layer_name in self.model_layers.keys():
                 layer_drop_out[layer_name] = []
                 layer_drop_in[layer_name] = []
-        # return the neurons to drop
         layer_drop_out = {}
+        # select neurons to drop for conv layers and fc layers
         for layer_name in self.model_layers.keys():
             layer_drop_out[layer_name] = []
-            if self.model_layers[layer_name]["descendants"] == []:
+            layer = get_model_layer(self.model, layer_name)
+            if self.model_layers[layer_name]["descendants"] == [] or isinstance(layer, torch.nn.BatchNorm2d):
                 continue
             num_drop = math.floor(self.layer_inout_dims[layer_name][1] * (1-p))
             if num_drop <= len(self.def_invariant_neurons[layer_name]):
@@ -254,6 +259,11 @@ class Fluid_Model_Manager:
                                                                     num_drop - len(self.invariant_neurons[layer_name]), 
                                                                     replace=False).tolist()
             layer_drop_out[layer_name] = sorted(layer_drop_out[layer_name])
+        # apply neurons to drop for batchnorm layers
+        for layer_name in self.model_layers.keys():
+            if isinstance(get_model_layer(self.model, layer_name), torch.nn.BatchNorm2d):
+                layer_drop_out[layer_name] = layer_drop_out[self.model_layers[layer_name]["ansestors"][0]]
+        # apply the corresponding in-coming neurons dropped
         layer_drop_in = {}
         for layer_name in self.model_layers.keys():
             if self.model_layers[layer_name]["ansestors"] == []:
@@ -267,7 +277,6 @@ class Fluid_Model_Manager:
         layer_drop_in, layer_drop_out = self._get_dropping_neurons(p)
         if p == 1:
             return deepcopy(self.model), layer_drop_in, layer_drop_out
-        layer_drop_in, layer_drop_out = self._get_dropping_neurons(p)
         sub_model = deepcopy(self.model)
         for layer_name in self.model_layers.keys():
             layer = get_model_layer(sub_model, layer_name)
@@ -275,9 +284,13 @@ class Fluid_Model_Manager:
                 num_in_filter = layer.in_channels
                 num_out_filter = layer.out_channels
                 new_num_in_filter = math.ceil(num_in_filter * p) if len(self.model_layers[layer_name]["ansestors"]) != 0 else num_in_filter
-                new_num_out_filter = math.ceil(num_out_filter * p) if len(self.model_layers[layer_name]["descendants"]) != 0 else num_out_filter
                 new_in_filter_ids = [id for id in list(range(num_in_filter)) if id not in layer_drop_in[layer_name]]
-                new_out_filter_ids = [id for id in list(range(num_out_filter)) if id not in layer_drop_out[layer_name]]
+                if layer in self.final_convs:
+                    new_num_out_filter = num_out_filter
+                    new_out_filter_ids = list(range(num_out_filter))
+                else:
+                    new_num_out_filter = math.ceil(num_out_filter * p) if len(self.model_layers[layer_name]["descendants"]) != 0 else num_out_filter
+                    new_out_filter_ids = [id for id in list(range(num_out_filter)) if id not in layer_drop_out[layer_name]]
                 assert len(new_in_filter_ids) == new_num_in_filter
                 assert len(new_out_filter_ids) == new_num_out_filter
                 new_weight = layer.weight[new_out_filter_ids][:, new_in_filter_ids]
@@ -291,6 +304,8 @@ class Fluid_Model_Manager:
                 new_layer.weight = torch.nn.Parameter(new_weight)
                 set_model_layer(sub_model, new_layer, layer_name)
             elif isinstance(layer, torch.nn.Linear):
+                if layer in self.final_fcs:
+                    continue
                 num_in_feature = layer.in_features
                 num_out_feature = layer.out_features
                 new_num_in_feature = math.ceil(num_in_feature * p) if len(self.model_layers[layer_name]["ansestors"]) != 0 else num_in_feature
@@ -304,6 +319,8 @@ class Fluid_Model_Manager:
                 new_layer.weight = torch.nn.Parameter(new_weight)
                 set_model_layer(sub_model, new_layer, layer_name)
             elif isinstance(layer, torch.nn.BatchNorm2d):
+                if layer in self.final_batch:
+                    continue
                 num_features = layer.num_features
                 new_num_features = math.ceil(num_features * p)
                 new_feature_ids = [id for id in list(range(num_features)) if id not in layer_drop_out[layer_name]]
@@ -331,14 +348,14 @@ class Fluid_Model_Manager:
         self.client_caps = caps
         self.task_this_round = len(clients)
         self.task_updated = 0
+        slowest_client = sorted(caps.items(), key=lambda x: x[1])[0][0]
         for client in clients:
             if is_first_round:
                 self.client2p[client] = 1
                 self.client_models[client] = deepcopy(self.model)
                 logging.info(f"using full model for client {client}")
                 continue
-            cap = caps[client]
-            self.client2p[client] = 1 if cap > femnist_target_mac else self.p
+            self.client2p[client] = 1 if client != slowest_client else self.p
             self.client_models[client], self.client_drop_ins[client], self.client_drop_outs[client] = \
                 self.generate_sub_model(self.client2p[client])
             logging.info(f"using sub model for client {client} with p={self.client2p[client]}, dropping neurons: {self.client_drop_outs[client]}")
@@ -352,6 +369,7 @@ class Fluid_Model_Manager:
         logging.info(f"all dropped neurons this round: {self.dropped_neurons}")
 
     def prepare_to_test(self) -> list:
+        self.models_to_test[1] = self.model
         for p in self.models_to_test.keys():
             self.models_to_test[p], _, _ = self.generate_sub_model(p)
         return list(self.models_to_test.keys())
