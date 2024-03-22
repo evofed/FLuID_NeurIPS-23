@@ -1,6 +1,6 @@
-femnist_target_mac = 2e6
 femnist_th_incre = 0.01
 cifar_th_incre = 0.2
+
 femnist_final_conv = ["cells.1.conv_b.op.2", "cells.1.downsample.1.2.2.2.2.2"]
 femnist_final_batch = ["lastact.0"]
 femnist_final_fc = ["classifier"]
@@ -186,3 +186,18 @@ femnist_model_layers = {
         "descendants": []
     }
 }
+
+speech_final_conv = []
+speech_final_batch = []
+speech_final_fc = []
+speech_model_layers = {}
+
+cifar_final_conv = []
+cifar_final_batch = []
+cifar_final_fc = []
+cifar_model_layers = {}
+
+openimage_final_conv = []
+openimage_final_batch = []
+openimage_final_fc = []
+openimage_model_layers = {}

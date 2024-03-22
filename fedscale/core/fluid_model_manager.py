@@ -10,6 +10,7 @@ from typing import List, Iterable, Tuple
 import numpy as np
 from collections import defaultdict, OrderedDict
 import logging
+from thop import profile
 
 from fedscale.core.net2netlib import get_model_layer, set_model_layer
 from fedscale.core.model_layers import *
@@ -22,6 +23,13 @@ def reset_parameters(model: torch.nn.Module):
             layer.reset_parameters()
         else:
             reset_parameters(layer)
+
+dataset_input = {
+    'femnist': torch.randn(1, 3, 28, 28),
+    'openImg': torch.randn(1, 3, 256, 256),
+    'google_speech': torch.randn(1, 1, 32, 32),
+    'cifar10': torch.randn(1, 3, 32, 32)
+}
 
 class Fluid_Model_Manager:
     def __init__(self, model, args) -> None:
@@ -40,6 +48,8 @@ class Fluid_Model_Manager:
         self.task_this_round = 0
         self.task_updated = 0
         self.p = 0.95
+        self.mac, _ = profile(self.model, inputs=(dataset_input[args.data_set],), verbose=False)
+        logging.info(f"model has MACs: {self.mac}")
         if args.data_set == "femnist":
             self.model_layers = femnist_model_layers
             self.th_incre = femnist_th_incre
@@ -213,11 +223,11 @@ class Fluid_Model_Manager:
 
     def get_model_mac_by_p(self, p) -> float:
         # return the MAC of the model of p
-        return .0
+        return self.mac
     
     def get_model_mac_by_client(self, client_id) -> float:
         # return the MAC of the model of client
-        return .0
+        return self.mac
 
     def get_model(self, client_id):
         assert client_id in self.client_models
@@ -276,7 +286,7 @@ class Fluid_Model_Manager:
     def generate_sub_model(self, p: float):
         layer_drop_in, layer_drop_out = self._get_dropping_neurons(p)
         if p == 1:
-            return deepcopy(self.model), layer_drop_in, layer_drop_out
+            return self.model, layer_drop_in, layer_drop_out
         sub_model = deepcopy(self.model)
         for layer_name in self.model_layers.keys():
             layer = get_model_layer(sub_model, layer_name)
@@ -352,7 +362,7 @@ class Fluid_Model_Manager:
         for client in clients:
             if is_first_round:
                 self.client2p[client] = 1
-                self.client_models[client] = deepcopy(self.model)
+                self.client_models[client] = self.model
                 logging.info(f"using full model for client {client}")
                 continue
             self.client2p[client] = 1 if client != slowest_client else self.p

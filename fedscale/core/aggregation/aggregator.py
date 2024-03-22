@@ -663,16 +663,9 @@ class Aggregator(job_api_pb2_grpc.JobServiceServicer):
                 client_id = result['client_id']
                 accuracy = result['acc']
                 if client_id not in self.client_accuracy:
-                    self.client_accuracy[client_id] = .0
-                # logging.info(self.client_profiles.keys())
-                if model_mac <= float(self.client_profiles[client_id]['macs'])\
-                    and accuracy > self.client_accuracy[client_id]:
                     self.client_accuracy[client_id] = accuracy
-                    self.client_best_model[client_id] = p
-                if self.client_accuracy[client_id] == .0 and p == 0.5:
+                elif self.client_accuracy[client_id] < accuracy:
                     self.client_accuracy[client_id] = accuracy
-                    self.client_best_model[client_id] = p
-
 
         # List append is thread-safe
         self.test_result_accumulator[p] += results
@@ -724,19 +717,9 @@ class Aggregator(job_api_pb2_grpc.JobServiceServicer):
                 self.log_test_result()
 
             # calculate average accuracy
-            self.average_test_accuracy = 0.
-            logging.info(f"debug check average test accuracy: {self.average_test_accuracy}")
-            count_a = 0
-            for client_id in self.client_accuracy:
-                self.average_test_accuracy += self.client_accuracy[client_id]
-                count_a += 1
-            logging.info(f"debug check number of client: {count_a}")
-            logging.info(f"debug check average test accuracy sum: {self.average_test_accuracy}")
-            if len(self.client_accuracy) > 0:
-                self.average_test_accuracy /= len(self.client_accuracy)
-            logging.info(f"debug check final average: {self.average_test_accuracy}")
-            self.client_accuracy = {}
-
+            self.average_test_accuracy = np.mean([accu[1] for accu in self.client_accuracy.items()])
+            logging.info(f"FLuID accuracy at round {self.round}: {self.average_test_accuracy}")
+            logging.info(f"client accuracy at round {self.round}: {self.client_accuracy}")
 
             self.broadcast_events_queue.append(commons.START_ROUND if len(self.model_to_test) == 0 else commons.MODEL_TEST)
 
