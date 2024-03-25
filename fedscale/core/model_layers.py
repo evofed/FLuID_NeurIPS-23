@@ -236,7 +236,7 @@ speech_model_layers = {
         "ansestors": ["layer3.0.conv1.2"],
         "descendants": ["layer3.0.conv2"]
     },
-    "layer.3.conv2": {
+    "layer3.0.conv2": {
         "ansestors": ["layer3.0.bn1"],
         "descendants": ["layer3.0.bn2"]
     },

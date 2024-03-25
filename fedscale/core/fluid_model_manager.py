@@ -56,6 +56,12 @@ class Fluid_Model_Manager:
             self.final_convs = femnist_final_conv
             self.final_fcs = femnist_final_fc
             self.final_batch = femnist_final_batch
+        elif args.data_set == "google_speech":
+            self.model_layers = speech_model_layers
+            self.th_incre = femnist_th_incre
+            self.final_convs = speech_final_conv
+            self.final_batch = speech_final_batch
+            self.final_fcs = speech_final_fc
         else:
             raise NotImplementedError(f"Dataset {args.data_set} is not supported")
         
