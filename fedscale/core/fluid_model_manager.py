@@ -62,6 +62,12 @@ class Fluid_Model_Manager:
             self.final_convs = speech_final_conv
             self.final_batch = speech_final_batch
             self.final_fcs = speech_final_fc
+        elif args.data_set == "cifar10":
+            self.model_layers = cifar_model_layers
+            self.th_incre = femnist_th_incre
+            self.final_convs = cifar_final_conv
+            self.final_batch = cifar_final_batch
+            self.final_fcs = cifar_final_fc
         else:
             raise NotImplementedError(f"Dataset {args.data_set} is not supported")
         
