@@ -664,7 +664,132 @@ cifar_model_layers = {
     }
 }
 
-openimage_final_conv = []
-openimage_final_batch = []
-openimage_final_fc = []
-openimage_model_layers = {}
+openimage_final_conv = ["layer4.conv2.2", "layer4.0.downsample.0"]
+openimage_final_batch = ["layer4.0.downsample.1"]
+openimage_final_fc = ["fc"]
+openimage_model_layers = {
+    "conv1": {
+        "ansestors": [],
+        "descendants": ["bn1"]
+    },
+    "bn1": {
+        "ansestors": ["conv1"],
+        "descendants": ["layer1.0.conv1", "layer1.0.downsample.0"]
+    },
+    "layer1.0.conv1": {
+        "ansestors": ["bn1"],
+        "descendants": ["layer1.0.bn1"]
+    },
+    "layer1.0.bn1": {
+        "ansestors": ["layer1.0.conv1"],
+        "descendants": ["layer1.0.conv2"]
+    },
+    "layer1.0.conv2": {
+        "ansestors": ["layer1.0.bn1"],
+        "descendants": ["layer1.0.bn2"]
+    },
+    "layer1.0.bn2": {
+        "ansestors": ["layer1.0.conv2"],
+        "descendants": ["layer2.0.conv1", "layer2.0.downsample.0"]
+    },
+    "layer1.0.downsample.0": {
+        "ansestors": ["bn1"],
+        "descendants": ["layer1.0.downsample.1"]
+    },
+    "layer1.0.downsample.1": {
+        "ansestors": ["layer1.0.downsample.0"],
+        "descendants": ["layer2.0.conv1", "layer2.0.downsample.0"]
+    },
+    "layer2.0.conv1": {
+        "ansestors": ["layer1.0.bn2", "layer1.0.downsample.1"],
+        "descendants": ["layer2.0.bn1"]
+    },
+    "layer2.0.bn1": {
+        "ansestors": ["layer2.0.conv1"],
+        "descendants": ["layer2.0.conv2"]
+    },
+    "layer2.0.conv2": {
+        "ansestors": ["layer2.0.bn1"],
+        "descendants": ["layer2.0.bn2"]
+    },
+    "layer2.0.bn2": {
+        "ansestors": ["layer2.0.conv2"],
+        "descendants": ["layer3.0.conv1", "layer3.0.downsample.0"]
+    },
+    "layer2.0.downsample.0": {
+        "ansestors": ["layer1.0.downsample.1"],
+        "descendants": ["layer2.0.downsample.1"]
+    },
+    "layer2.0.downsample.1": {
+        "ansestors": ["layer2.0.downsample.0"],
+        "descendants": ["layer3.0.conv1", "layer3.0.downsample.0"]
+    },
+    "layer3.0.conv1": {
+        "ansestors": ["layer2.0.bn2", "layer2.0.downsample.1"],
+        "descendants": ["layer3.0.bn1"]
+    },
+    "layer3.0.bn1": {
+        "ansestors": ["layer3.0.conv1"],
+        "descendants": ["layer3.0.conv2"]
+    },
+    "layer3.0.conv2": {
+        "ansestors": ["layer3.0.bn1"],
+        "descendants": ["layer3.0.bn2"]
+    },
+    "layer3.0.bn2": {
+        "ansestors": ["layer3.0.conv2"],
+        "descendants": ["layer4.0.conv1", "layer4.0.downsample.0"]
+    },
+    "layer3.0.downsample.0": {
+        "ansestors": ["layer2.0.downsample.1"],
+        "descendants": ["layer3.0.downsample.1"]
+    },
+    "layer3.0.downsample.1": {
+        "ansestors": ["layer3.0.downsample.0"],
+        "descendants": ["layer4.0.conv1.0", "layer4.0.downsample.0"]
+    },
+    "layer4.0.conv1.0": {
+        "ansestors": ["layer3.0.bn2", "layer3.0.downsample.1"],
+        "descendants": ["layer4.0.conv1.1"]
+    },
+    "layer4.0.conv1.1": {
+        "ansestors": ["layer4.0.conv1.0"],
+        "descendants": ["layer4.0.conv1.2"]
+    },
+    "layer4.0.conv1.2": {
+        "ansestors": ["layer4.0.conv1.1"],
+        "descendants": ["layer4.0.bn1"]
+    },
+    "layer4.0.bn1": {
+        "ansestors": ["layer4.0.conv1.2"],
+        "descendants": ["layer4.0.conv2.0"]
+    },
+    "layer4.0.conv2.0": {
+        "ansestors": ["layer4.0.bn1"],
+        "descendants": ["layer4.0.conv2.1"]
+    },
+    "layer4.0.conv2.1": {
+        "ansestors": ["layer4.0.conv2.0"],
+        "descendants": ["layer4.0.conv2.2"]
+    },
+    "layer4.0.conv2.2": {
+        "ansestors": ["layer4.0.conv2.1"],
+        "descendants": ["layer4.0.bn2"]
+    },
+    "layer4.0.bn2": {
+        "ansestors": ["layer4.0.conv2.2"],
+        "descendants": ["fc"]
+    },
+    "layer4.0.downsample.0": {
+        "ansestors": ["layer3.0.bn2", "layer3.0.downsample.1"],
+        "descendants": ["layer4.0.downsample.1"]
+    },
+    "layer4.0.downsample.1": {
+        "ansestors": ["layer4.0.downsample.0"],
+        "descendants": ["fc"]
+    },
+    "fc": {
+        "ansestors": ["layer4.0.bn2", "layer4.0.downsample.1"],
+        "descendants": []
+    }
+}
