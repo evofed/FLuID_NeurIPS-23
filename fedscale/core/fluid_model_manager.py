@@ -68,6 +68,12 @@ class Fluid_Model_Manager:
             self.final_convs = cifar_final_conv
             self.final_batch = cifar_final_batch
             self.final_fcs = cifar_final_fc
+        elif args.data_set == "open_image":
+            self.model_layers = openimage_model_layers
+            self.th_incre = femnist_th_incre
+            self.final_convs = openimage_final_conv
+            self.final_batch = openimage_final_batch
+            self.final_fcs = openimage_final_fc
         else:
             raise NotImplementedError(f"Dataset {args.data_set} is not supported")
         
