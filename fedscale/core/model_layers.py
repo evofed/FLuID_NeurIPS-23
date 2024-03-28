@@ -282,10 +282,387 @@ speech_model_layers = {
     }
 }
 
-cifar_final_conv = []
-cifar_final_batch = []
-cifar_final_fc = []
-cifar_model_layers = {}
+cifar_final_conv = ["features.12.0"]
+cifar_final_batch = ["features.12.1"]
+cifar_final_fc = ["classifier.0", "classifier.3"]
+cifar_model_layers = {
+    "features.0.0": {
+        "ansestors": [],
+        "descendants": ["features.0.1"]
+    },
+    "features.0.1": {
+        "ansestors": ["features.0.0"],
+        "descendants": ["features.1.block.0.0"]
+    },
+    "features.1.block.0.0": {
+        "ansestors": ["features.0.1"],
+        "descendants": ["features.1.block.0.1"]
+    },
+    "features.1.block.0.1": {
+        "ansestors": ["features.1.block.0.0"],
+        "descendants": ["features.1.block.1.fc1", "features.1.block.2.0"]
+    },
+    "features.1.block.1.fc1": {
+        "ansestors": ["features.0.1"],
+        "descendants": ["features.1.block.1.fc2"]
+    },
+    "features.1.block.1.fc2": {
+        "ansestors": ["features.1.block.1.fc1"],
+        "descendants": ["features.1.block.2.0"]
+    },
+    "features.1.block.2.0": {
+        "ansestors": ["features.1.block.1.fc2", "features.1.block.0.1"],
+        "descendants": ["features.1.block.2.1"]
+    },
+    "features.1.block.2.1": {
+        "ansestors": ["features.1.block.2.0"],
+        "descendants": ["features.2.block.0.0"]
+    },
+    "features.2.block.0.0": {
+        "ansestors": ["features.1.block.2.1"],
+        "descendants": ["features.2.block.0.1"]
+    },
+    "features.2.block.0.1": {
+        "ansestors": ["features.2.block.0.0"],
+        "descendants": ["features.2.block.1.0.0"]
+    },
+    "features.2.block.1.0.0": {
+        "ansestors": ["features.2.block.0.1"],
+        "descendants": ["features.2.block.1.0.1"]
+    },
+    "features.2.block.1.0.1": {
+        "ansestors": ["features.2.block.1.0.0"],
+        "descendants": ["features.2.block.1.0.2.0"]
+    },
+    "features.2.block.1.0.2.0": {
+        "ansestors": ["features.2.block.1.0.1"],
+        "descendants": ["features.2.block.1.0.2.1"]
+    },
+    "features.2.block.1.0.2.1": {
+        "ansestors": ["features.2.block.1.0.2.0"],
+        "descendants": ["features.2.block.1.0.2.2"]
+    },
+    "features.2.block.1.0.2.2": {
+        "ansestors": ["features.2.block.1.0.2.1"],
+        "descendants": ["features.2.block.1.1"]
+    },
+    "features.2.block.1.1": {
+        "ansestors": ["features.2.block.1.0.2.2"],
+        "descendants": ["features.2.block.2.0"]
+    },
+    "features.2.block.2.0": {
+        "ansestors": ["features.2.block.1.1"],
+        "descendants": ["features.2.block.2.1"]
+    },
+    "features.2.block.2.1": {
+        "ansestors": ["features.2.block.2.0"],
+        "descendants": ["features.3.block.0.0.0", "features.4.block.0.0"]
+    },
+    "features.3.block.0.0.0": {
+        "ansestors": ["features.2.block.2.1"],
+        "descendants": ["features.3.block.0.0.1"]
+    },
+    "features.3.block.0.0.1": {
+        "ansestors": ["features.3.block.0.0.0"],
+        "descendants": ["features.3.block.0.0.2"]
+    },
+    "features.3.block.0.0.2": {
+        "ansestors": ["features.3.block.0.0.1"],
+        "descendants": ["features.3.block.0.1"]
+    },
+    "features.3.block.0.1": {
+        "ansestors": ["features.3.block.0.0.2"],
+        "descendants": ["features.3.block.1.0"]
+    },
+    "features.3.block.1.0": {
+        "ansestors": ["features.3.block.0.1"],
+        "descendants": ["features.3.block.1.1"]
+    },
+    "features.3.block.1.1": {
+        "ansestors": ["features.3.block.1.0"],
+        "descendants": ["features.3.block.2.0"]
+    },
+    "features.3.block.2.0": {
+        "ansestors": ["features.3.block.1.1"],
+        "descendants": ["features.3.block.2.1"]
+    },
+    "features.3.block.2.1": {
+        "ansestors": ["features.3.block.2.0"],
+        "descendants": ["features.4.block.0.0"]
+    },
+    "features.4.block.0.0": {
+        "ansestors": ["features.3.block.2.1", "features.2.block.2.1"],
+        "descendants": ["features.4.block.0.1"]
+    },
+    "features.4.block.0.1": {
+        "ansestors": ["features.4.block.0.0"],
+        "descendants": ["features.4.block.1.0"]
+    },
+    "features.4.block.1.0": {
+        "ansestors": ["features.4.block.0.1"],
+        "descendants": ["features.4.block.1.1"]
+    },
+    "features.4.block.1.1": {
+        "ansestors": ["features.4.block.1.0"],
+        "descendants": ["features.4.block.2.fc1", "features.4.block.3.0"]
+    },
+    "features.4.block.2.fc1": {
+        "ansestors": ["features.4.block.1.1"],
+        "descendants": ["features.4.block.2.fc2"]
+    },
+    "features.4.block.2.fc2": {
+        "ansestors": ["features.4.block.2.fc1"],
+        "descendants": ["features.4.block.3.0"]
+    },
+    "features.4.block.3.0": {
+        "ansestors": ["features.4.block.2.fc2", "features.4.block.1.1"],
+        "descendants": ["features.4.block.3.1"]
+    },
+    "features.4.block.3.1": {
+        "ansestors": ["features.4.block.3.0"],
+        "descendants": ["features.5.block.0.0", "features.6.block.0.0", "features.7.block.0.0"]
+    },
+    "features.5.block.0.0": {
+        "ansestors": ["features.4.block.3.1"],
+        "descendants": ["features.5.block.0.1"]
+    },
+    "features.5.block.0.1": {
+        "ansestors": ["features.5.block.0.0"],
+        "descendants": ["features.5.block.1.0"]
+    },
+    "features.5.block.1.0": {
+        "ansestors": ["features.5.block.0.1"],
+        "descendants": ["features.5.block.1.1"]
+    },
+    "features.5.block.1.1": {
+        "ansestors": ["features.5.block.1.0"],
+        "descendants": ["features.5.block.2.fc1", "features.5.block.3.0"]
+    },
+    "features.5.block.2.fc1": {
+        "ansestors": ["features.5.block.1.1"],
+        "descendants": ["features.5.block.2.fc2"]
+    },
+    "features.5.block.2.fc2": {
+        "ansestors": ["features.5.block.2.fc1"],
+        "descendants": ["features.5.block.3.0"]
+    },
+    "features.5.block.3.0": {
+        "ansestors": ["features.5.block.2.fc2", "features.5.block.1.1"],
+        "descendants": ["features.5.block.3.1"]
+    },
+    "features.5.block.3.1": {
+        "ansestors": ["features.5.block.3.0"],
+        "descendants": ["features.6.block.0.0", "features.7.block.0.0"]
+    },
+    "features.6.block.0.0": {
+        "ansestors": ["features.5.block.3.1"],
+        "descendants": ["features.6.block.0.1"]
+    },
+    "features.6.block.0.1": {
+        "ansestors": ["features.6.block.0.0"],
+        "descendants": ["features.6.block.1.0"]
+    },
+    "features.6.block.1.0": {
+        "ansestors": ["features.6.block.0.1"],
+        "descendants": ["features.6.block.1.1"]
+    },
+    "features.6.block.1.1": {
+        "ansestors": ["features.6.block.1.0"],
+        "descendants": ["features.6.block.2.fc1", "features.6.block.3.0"]
+    },
+    "features.6.block.2.fc1": {
+        "ansestors": ["features.6.block.1.1"],
+        "descendants": ["features.6.block.2.fc2"]
+    },
+    "features.6.block.2.fc2": {
+        "ansestors": ["features.6.block.2.fc1"],
+        "descendants": ["features.6.block.3.0"]
+    },
+    "features.6.block.3.0": {
+        "ansestors": ["features.6.block.2.fc2", "features.6.block.1.1"],
+        "descendants": ["features.6.block.3.1"]
+    },
+    "features.6.block.3.1": {
+        "ansestors": ["features.6.block.3.0"],
+        "descendants": ["features.7.block.0.0"]
+    },
+    "features.7.block.0.0": {
+        "ansestors": ["features.6.block.3.1", "features.5.block.3.1", "features.4.block.3.1"],
+        "descendants": ["features.7.block.0.1"]
+    },
+    "features.7.block.0.1": {
+        "ansestors": ["features.7.block.0.0"],
+        "descendants": ["features.7.block.1.0"]
+    },
+    "features.7.block.1.0": {
+        "ansestors": ["features.7.block.0.1"],
+        "descendants": ["features.7.block.1.1"]
+    },
+    "features.7.block.1.1": {
+        "ansestors": ["features.7.block.1.0"],
+        "descendants": ["features.7.block.2.fc1", "features.7.block.3.0"]
+    },
+    "features.7.block.2.fc1": {
+        "ansestors": ["features.7.block.1.1"],
+        "descendants": ["features.7.block.2.fc2"]
+    },
+    "features.7.block.2.fc2": {
+        "ansestors": ["features.7.block.2.fc1"],
+        "descendants": ["features.7.block.3.0"]
+    },
+    "features.7.block.3.0": {
+        "ansestors": ["features.7.block.2.fc2", "features.7.block.1.1"],
+        "descendants": ["features.7.block.3.1"]
+    },
+    "features.7.block.3.1": {
+        "ansestors": ["features.7.block.3.0"],
+        "descendants": ["features.8.block.0.0", "features.9.block.0.0"]
+    },
+    "features.8.block.0.0": {
+        "ansestors": ["features.7.block.3.1"],
+        "descendants": ["features.8.block.0.1"]
+    },
+    "features.8.block.0.1": {
+        "ansestors": ["features.8.block.0.0"],
+        "descendants": ["features.8.block.1.0"]
+    },
+    "features.8.block.1.0": {
+        "ansestors": ["features.8.block.0.1"],
+        "descendants": ["features.8.block.1.1"]
+    },
+    "features.8.block.1.1": {
+        "ansestors": ["features.8.block.1.0"],
+        "descendants": ["features.8.block.2.fc1", "features.8.block.3.0"]
+    },
+    "features.8.block.2.fc1": {
+        "ansestors": ["features.8.block.1.1"],
+        "descendants": ["features.8.block.2.fc2"]
+    },
+    "features.8.block.2.fc2": {
+        "ansestors": ["features.8.block.2.fc1"],
+        "descendants": ["features.8.block.3.0"]
+    },
+    "features.8.block.3.0": {
+        "ansestors": ["features.8.block.2.fc2", "features.8.block.1.1"],
+        "descendants": ["features.8.block.3.1"]
+    },
+    "features.8.block.3.1": {
+        "ansestors": ["features.8.block.3.0"],
+        "descendants": ["features.9.block.0.0"]
+    },
+    "features.9.block.0.0": {
+        "ansestors": ["features.8.block.3.1"],
+        "descendants": ["features.9.block.0.1"]
+    },
+    "features.9.block.0.1": {
+        "ansestors": ["features.9.block.0.0"],
+        "descendants": ["features.9.block.1.0"]
+    },
+    "features.9.block.1.0": {
+        "ansestors": ["features.9.block.0.1"],
+        "descendants": ["features.9.block.1.1"]
+    },
+    "features.9.block.1.1": {
+        "ansestors": ["features.9.block.1.0"],
+        "descendants": ["features.9.block.2.fc1", "features.9.block.3.0"]
+    },
+    "features.9.block.2.fc1": {
+        "ansestors": ["features.9.block.1.1"],
+        "descendants": ["features.9.block.2.fc2"]
+    },
+    "features.9.block.2.fc2": {
+        "ansestors": ["features.9.block.2.fc1"],
+        "descendants": ["features.9.block.3.0"]
+    },
+    "features.9.block.3.0": {
+        "ansestors": ["features.9.block.2.fc2", "features.9.block.1.1"],
+        "descendants": ["features.9.block.3.1"]
+    },
+    "features.9.block.3.1": {
+        "ansestors": ["features.9.block.3.0"],
+        "descendants": ["features.10.block.0.0", "features.11.block.0.0", "features.12.0"]
+    },
+    "features.10.block.0.0": {
+        "ansestors": ["features.9.block.3.1"],
+        "descendants": ["features.10.block.0.1"]
+    },
+    "features.10.block.0.1": {
+        "ansestors": ["features.10.block.0.0"],
+        "descendants": ["features.10.block.1.0"]
+    },
+    "features.10.block.1.0": {
+        "ansestors": ["features.10.block.0.1"],
+        "descendants": ["features.10.block.1.1"]
+    },
+    "features.10.block.1.1": {
+        "ansestors": ["features.10.block.1.0"],
+        "descendants": ["features.10.block.2.fc1", "features.10.block.3.0"]
+    },
+    "features.10.block.2.fc1": {
+        "ansestors": ["features.10.block.1.1"],
+        "descendants": ["features.10.block.2.fc2"]
+    },
+    "features.10.block.2.fc2": {
+        "ansestors": ["features.10.block.2.fc1"],
+        "descendants": ["features.10.block.3.0"]
+    },
+    "features.10.block.3.0": {
+        "ansestors": ["features.10.block.2.fc2", "features.10.block.1.1"],
+        "descendants": ["features.10.block.3.1"]
+    },
+    "features.10.block.3.1": {
+        "ansestors": ["features.10.block.3.0"],
+        "descendants": ["features.11.block.0.0", "features.12.0"]
+    },
+    "features.11.block.0.0": {
+        "ansestors": ["features.10.block.3.1"],
+        "descendants": ["features.11.block.0.1"]
+    },
+    "features.11.block.0.1": {
+        "ansestors": ["features.11.block.0.0"],
+        "descendants": ["features.11.block.1.0"]
+    },
+    "features.11.block.1.0": {
+        "ansestors": ["features.11.block.0.1"],
+        "descendants": ["features.11.block.1.1"]
+    },
+    "features.11.block.1.1": {
+        "ansestors": ["features.11.block.1.0"],
+        "descendants": ["features.11.block.2.fc1", "features.11.block.3.0"]
+    },
+    "features.11.block.2.fc1": {
+        "ansestors": ["features.11.block.1.1"],
+        "descendants": ["features.11.block.2.fc2"]
+    },
+    "features.11.block.2.fc2": {
+        "ansestors": ["features.11.block.2.fc1"],
+        "descendants": ["features.11.block.3.0"]
+    },
+    "features.11.block.3.0": {
+        "ansestors": ["features.11.block.2.fc2", "features.11.block.1.1"],
+        "descendants": ["features.11.block.3.1"]
+    },
+    "features.11.block.3.1": {
+        "ansestors": ["features.11.block.3.0"],
+        "descendants": ["features.12.0"]
+    },
+    "features.12.0": {
+        "ansestors": ["features.11.block.3.1"],
+        "descendants": ["features.12.1"]
+    },
+    "features.12.1": {
+        "ansestors": ["features.12.0"],
+        "descendants": ["classifier.0"]
+    },
+    "classifier.0": {
+        "ansestors": ["features.12.1"],
+        "descendants": ["classifier.3"]
+    },
+    "classifier.3": {
+        "ansestors": ["classifier.0"],
+        "descendants": []
+    }
+}
 
 openimage_final_conv = []
 openimage_final_batch = []
